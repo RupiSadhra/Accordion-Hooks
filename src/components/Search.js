@@ -6,22 +6,49 @@ const Search = () => {
   const [results, setResult] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("https://en.wikipedia.org/w/api.php", {
-        params: {
-          action: "query",
-          list: "search",
-          origin: "*",
-          format: "json",
-          srsearch: term,
-        },
-      })
-      .then((response) => {
-        setResult(response.data.query.search);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    if (term && !results.length) {
+      axios
+        .get("https://en.wikipedia.org/w/api.php", {
+          params: {
+            action: "query",
+            list: "search",
+            origin: "*",
+            format: "json",
+            srsearch: term,
+          },
+        })
+        .then((response) => {
+          setResult(response.data.query.search);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      const timeoutId = setTimeout(() => {
+        if (term) {
+          axios
+            .get("https://en.wikipedia.org/w/api.php", {
+              params: {
+                action: "query",
+                list: "search",
+                origin: "*",
+                format: "json",
+                srsearch: term,
+              },
+            })
+            .then((response) => {
+              setResult(response.data.query.search);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
+      }, 500);
+
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
   }, [term]);
 
   const renderedResults = results.map((result) => {
